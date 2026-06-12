@@ -118,3 +118,9 @@ def delete_from_root(filename: str = Form(...)):
 def remove_file(filename: str) -> dict:
     """Supprime le blob dont le nom est passé en query param (?filename=...)."""
     return delete_blob(filename)
+
+
+if __name__ == "__main__":
+    import uvicorn
+    port = int(os.getenv("PORT", 8000))
+    uvicorn.run("main:app", host="0.0.0.0", port=port)
