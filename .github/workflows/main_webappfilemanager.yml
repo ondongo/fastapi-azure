@@ -74,3 +74,4 @@ jobs:
           app-name: 'webappfilemanager'
           slot-name: 'Production'
           startup-command: 'python main.py'
+          os-type: Linux
