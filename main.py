@@ -52,6 +52,16 @@ def delete_blob(filename: str) -> dict:
 
 
 # ---------------------------------------------------------------------------
+# Debug (à supprimer après vérification)
+# ---------------------------------------------------------------------------
+
+@app.get("/debug-env")
+def debug_env():
+    conn = os.getenv("AZURE_STORAGE_CONNECTION_STRING", "")
+    return {"set": bool(conn), "preview": conn[:40] + "..." if conn else "VIDE"}
+
+
+# ---------------------------------------------------------------------------
 # Interface HTML
 # ---------------------------------------------------------------------------
 
