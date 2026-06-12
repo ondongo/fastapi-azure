@@ -50,17 +50,6 @@ def delete_blob(filename: str) -> dict:
     blob_client.delete_blob()
     return {"message": f"Fichier '{filename}' supprimé avec succès."}
 
-
-# ---------------------------------------------------------------------------
-# Debug (à supprimer après vérification)
-# ---------------------------------------------------------------------------
-
-@app.get("/debug-env")
-def debug_env():
-    conn = os.getenv("AZURE_STORAGE_CONNECTION_STRING", "")
-    return {"set": bool(conn), "preview": conn[:40] + "..." if conn else "VIDE"}
-
-
 # ---------------------------------------------------------------------------
 # Interface HTML
 # ---------------------------------------------------------------------------
