@@ -63,14 +63,17 @@ def upload_page(request: Request, status: str = "", filename: str = "") -> HTMLR
         blobs = []
 
     file_count = len(blobs)
-    return templates.TemplateResponse("index.html", {
-        "request": request,
-        "status": status,
-        "filename": filename,
-        "blobs": blobs,
-        "file_count": file_count,
-        "container_name": CONTAINER_NAME,
-    })
+    return templates.TemplateResponse(
+        request=request,
+        name="index.html",
+        context={
+            "status": status,
+            "filename": filename,
+            "blobs": blobs,
+            "file_count": file_count,
+            "container_name": CONTAINER_NAME,
+        },
+    )
 
 
 @app.post("/")
