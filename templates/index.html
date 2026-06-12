@@ -258,6 +258,101 @@
       font-size: .78rem;
       color: var(--muted);
     }
+
+    /* ── Modal ── */
+    .modal-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.55);
+      backdrop-filter: blur(4px);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .modal-backdrop.open { display: flex; animation: fadeIn .2s ease; }
+    @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+
+    .modal {
+      background: var(--surface);
+      border-radius: 12px;
+      box-shadow: 0 20px 60px rgba(0,0,0,.3);
+      width: 100%;
+      max-width: 820px;
+      max-height: 88vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      animation: slideUp .25s ease;
+    }
+    @keyframes slideUp { from { transform:translateY(20px); opacity:0; } to { transform:translateY(0); opacity:1; } }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+    .modal-header .modal-title {
+      flex: 1;
+      font-weight: 600;
+      font-size: .95rem;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .btn-modal-close {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--muted);
+      padding: 4px;
+      border-radius: 6px;
+      display: flex;
+      transition: color .15s, background .15s;
+    }
+    .btn-modal-close:hover { color: var(--danger); background: var(--danger-bg); }
+
+    .modal-body {
+      flex: 1;
+      overflow: auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #1e1e1e;
+      min-height: 300px;
+    }
+    .modal-body img {
+      max-width: 100%;
+      max-height: 75vh;
+      object-fit: contain;
+      display: block;
+    }
+    .modal-body iframe {
+      width: 100%;
+      height: 75vh;
+      border: none;
+    }
+    .modal-body .unsupported {
+      text-align: center;
+      color: #aaa;
+      padding: 48px;
+    }
+    .modal-body .unsupported svg { margin-bottom: 12px; opacity: .5; }
+    .modal-body .unsupported p { font-size: .9rem; margin-bottom: 16px; }
+
+    .modal-footer {
+      padding: 12px 20px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+
+    .btn-preview { background: #f3f3f3; color: var(--text); }
+    .btn-preview:hover { background: var(--border); }
   </style>
 </head>
 <body>
@@ -360,7 +455,7 @@
         <thead>
           <tr>
             <th>Nom du fichier</th>
-            <th style="width:120px">Action</th>
+            <th style="width:200px">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -375,7 +470,16 @@
                 {{ name }}
               </div>
             </td>
-            <td>
+            <td style="display:flex; gap:6px; align-items:center;">
+              <button type="button" class="btn btn-preview"
+                      onclick="openPreview('{{ name }}')"
+                      title="Prévisualiser">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                  <circle cx="12" cy="12" r="3"/>
+                </svg>
+                Voir
+              </button>
               <form method="post" action="/delete">
                 <input type="hidden" name="filename" value="{{ name }}">
                 <button type="submit" class="btn btn-danger">
@@ -405,6 +509,35 @@
 </main>
 
 <footer>Azure Blob Storage &mdash; File Manager &copy; 2026</footer>
+
+<!-- ── Modal prévisualisation ── -->
+<div class="modal-backdrop" id="modalBackdrop" onclick="closeOnBackdrop(event)">
+  <div class="modal" id="modal">
+    <div class="modal-header">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+      </svg>
+      <span class="modal-title" id="modalTitle">Prévisualisation</span>
+      <button class="btn-modal-close" onclick="closeModal()" title="Fermer">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+    <div class="modal-body" id="modalBody">
+      <!-- contenu injecté par JS -->
+    </div>
+    <div class="modal-footer">
+      <a id="modalDownload" href="#" class="btn btn-preview" download>
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+        Télécharger
+      </a>
+      <button class="btn btn-primary" onclick="closeModal()">Fermer</button>
+    </div>
+  </div>
+</div>
 
 <script>
   function zoneClick(e) {
@@ -441,6 +574,66 @@
     if (bytes < 1024)       return bytes + ' o';
     if (bytes < 1048576)    return (bytes / 1024).toFixed(1) + ' Ko';
     return (bytes / 1048576).toFixed(1) + ' Mo';
+  }
+
+  const IMAGE_EXT = ['png','jpg','jpeg','gif','webp','svg','bmp','ico','avif'];
+  const PDF_EXT   = ['pdf'];
+  const TEXT_EXT  = ['txt','md','csv','json','xml','html','css','js','ts','py','log'];
+
+  function ext(name) { return name.split('.').pop().toLowerCase(); }
+
+  function openPreview(filename) {
+    const url = '/file/' + encodeURIComponent(filename);
+    const e   = ext(filename);
+    const body = document.getElementById('modalBody');
+    const dl   = document.getElementById('modalDownload');
+
+    document.getElementById('modalTitle').textContent = filename;
+    dl.href     = url;
+    dl.download = filename;
+    body.innerHTML = '';
+
+    if (IMAGE_EXT.includes(e)) {
+      const img = document.createElement('img');
+      img.src = url;
+      img.alt = filename;
+      body.appendChild(img);
+    } else if (PDF_EXT.includes(e)) {
+      body.innerHTML = `<iframe src="${url}"></iframe>`;
+    } else if (TEXT_EXT.includes(e)) {
+      fetch(url).then(r => r.text()).then(text => {
+        body.style.background = '#1e1e1e';
+        body.innerHTML = `<pre style="color:#d4d4d4;padding:24px;margin:0;overflow:auto;width:100%;max-height:75vh;font-size:.82rem;line-height:1.6;tab-size:2">${escapeHtml(text)}</pre>`;
+      });
+    } else {
+      body.innerHTML = `
+        <div class="unsupported">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/>
+            <polyline points="13 2 13 9 20 9"/>
+          </svg>
+          <p>Prévisualisation non disponible pour ce type de fichier.</p>
+        </div>`;
+    }
+
+    document.getElementById('modalBackdrop').classList.add('open');
+    document.addEventListener('keydown', handleEsc);
+  }
+
+  function closeModal() {
+    document.getElementById('modalBackdrop').classList.remove('open');
+    document.getElementById('modalBody').innerHTML = '';
+    document.removeEventListener('keydown', handleEsc);
+  }
+
+  function closeOnBackdrop(e) {
+    if (e.target === document.getElementById('modalBackdrop')) closeModal();
+  }
+
+  function handleEsc(e) { if (e.key === 'Escape') closeModal(); }
+
+  function escapeHtml(str) {
+    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   }
 </script>
 
